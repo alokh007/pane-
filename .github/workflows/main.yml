@@ -1,0 +1,21 @@
+name: build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
+      - run: |
+          windres app.rc -O coff -o app.res.o
+          g++ -std=c++17 -O2 -s -mwindows -static main.cpp app.res.o -o Pane.exe -lgdiplus -lgdi32 -lcomdlg32 -lole32 -lshell32 -luuid -ldwmapi -lshlwapi -luser32 -ladvapi32
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pane
+          path: Pane.exe
